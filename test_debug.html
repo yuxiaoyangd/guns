@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试版游戏测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .game-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .game-canvas {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            background: #27AE60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #229954;
+        }
+        
+        .status {
+            background: #E8F5E8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-info">
+            <h1>🔧 调试版游戏测试</h1>
+            <p>这是一个调试版本的游戏，用于测试Canvas渲染和触摸事件。</p>
+            <div class="status">
+                <strong>状态:</strong> <span id="gameStatus">初始化中...</span>
+            </div>
+        </div>
+        
+        <div class="game-canvas">
+            <!-- 游戏Canvas将在这里创建 -->
+        </div>
+        
+        <div class="controls">
+            <h3>控制面板</h3>
+            <button onclick="restartGame()">🔄 重启游戏</button>
+            <button onclick="toggleDebug()">🐛 切换调试信息</button>
+            <button onclick="clearConsole()">🧹 清空控制台</button>
+            <div class="status">
+                <strong>触摸坐标:</strong> <span id="touchCoords">等待触摸...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟抖音小游戏环境
+        if (typeof tt === 'undefined') {
+            console.log('🔧 模拟抖音小游戏环境...');
+            window.tt = {
+                getSystemInfoSync: () => ({
+                    windowWidth: window.innerWidth,
+                    windowHeight: window.innerHeight,
+                    pixelRatio: window.devicePixelRatio || 1
+                }),
+                createCanvas: () => document.createElement('canvas'),
+                onTouchStart: (callback) => {
+                    document.addEventListener('touchstart', callback);
+                    document.addEventListener('mousedown', (e) => {
+                        // 模拟触摸事件
+                        const touch = {
+                            touches: [{
+                                clientX: e.clientX,
+                                clientY: e.clientY
+                            }]
+                        };
+                        callback(touch);
+                    });
+                },
+                setInnerAudioOption: (options) => {
+                    console.log('🔇 音频设置:', options);
+                }
+            };
+        }
+        
+        // 游戏状态管理
+        let gameInstance = null;
+        let debugMode = true;
+        
+        // 启动游戏
+        function startGame() {
+            try {
+                // 清空游戏区域
+                const gameArea = document.querySelector('.game-canvas');
+                gameArea.innerHTML = '';
+                
+                // 创建游戏实例
+                gameInstance = new DebugGame();
+                
+                // 更新状态
+                document.getElementById('gameStatus').textContent = '游戏运行中';
+                
+                console.log('✅ 游戏启动成功');
+                
+            } catch (error) {
+                console.error('❌ 游戏启动失败:', error);
+                document.getElementById('gameStatus').textContent = '游戏启动失败: ' + error.message;
+            }
+        }
+        
+        // 重启游戏
+        function restartGame() {
+            if (gameInstance) {
+                gameInstance = null;
+            }
+            setTimeout(startGame, 100);
+        }
+        
+        // 切换调试信息
+        function toggleDebug() {
+            debugMode = !debugMode;
+            if (gameInstance && gameInstance.drawDebugInfo) {
+                gameInstance.debugMode = debugMode;
+            }
+            console.log('🐛 调试模式:', debugMode ? '开启' : '关闭');
+        }
+        
+        // 清空控制台
+        function clearConsole() {
+            console.clear();
+            console.log('🧹 控制台已清空');
+        }
+        
+        // 页面加载完成后启动游戏
+        window.addEventListener('load', () => {
+            console.log('📱 页面加载完成，启动游戏...');
+            startGame();
+        });
+        
+        // 监听触摸坐标更新
+        setInterval(() => {
+            if (gameInstance && gameInstance.lastTouchX !== undefined) {
+                document.getElementById('touchCoords').textContent = 
+                    `${gameInstance.lastTouchX}, ${gameInstance.lastTouchY}`;
+            }
+        }, 100);
+    </script>
+    
+    <!-- 导入游戏脚本 -->
+    <script src="debug_game.js"></script>
+</body>
+</html>

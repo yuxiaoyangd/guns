@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极简调试版测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 2000;
+            max-width: 300px;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 2000;
+        }
+        
+        button {
+            background: #27AE60;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #229954;
+        }
+        
+        .status {
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-panel">
+        <h3>🔧 极简调试版</h3>
+        <div class="status">
+            <strong>状态:</strong> <span id="gameStatus">初始化中...</span>
+        </div>
+        <div class="status">
+            <strong>触摸坐标:</strong> <span id="touchCoords">等待触摸...</span>
+        </div>
+        <div class="status">
+            <strong>鼠标坐标:</strong> <span id="mouseCoords">等待移动...</span>
+        </div>
+        <div class="status">
+            <strong>按钮位置:</strong> <span id="buttonPos">计算中...</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <h4>控制</h4>
+        <button onclick="restartGame()">🔄 重启</button>
+        <button onclick="toggleDebug()">🐛 调试</button>
+        <button onclick="clearConsole()">🧹 清空</button>
+        <button onclick="showHelp()">❓ 帮助</button>
+    </div>
+
+    <script>
+        let gameInstance = null;
+        let debugMode = true;
+        
+        // 启动游戏
+        function startGame() {
+            try {
+                // 清空页面
+                const existingCanvas = document.querySelector('canvas');
+                if (existingCanvas) {
+                    existingCanvas.remove();
+                }
+                
+                // 创建游戏实例
+                gameInstance = new SimpleDebug();
+                
+                // 更新状态
+                document.getElementById('gameStatus').textContent = '游戏运行中';
+                
+                console.log('✅ 极简调试版启动成功');
+                
+            } catch (error) {
+                console.error('❌ 游戏启动失败:', error);
+                document.getElementById('gameStatus').textContent = '启动失败: ' + error.message;
+            }
+        }
+        
+        // 重启游戏
+        function restartGame() {
+            if (gameInstance) {
+                gameInstance = null;
+            }
+            setTimeout(startGame, 100);
+        }
+        
+        // 切换调试模式
+        function toggleDebug() {
+            debugMode = !debugMode;
+            console.log('🐛 调试模式:', debugMode ? '开启' : '关闭');
+        }
+        
+        // 清空控制台
+        function clearConsole() {
+            console.clear();
+            console.log('🧹 控制台已清空');
+        }
+        
+        // 显示帮助
+        function showHelp() {
+            const help = `
+🔧 极简调试版使用说明：
+
+👆 触摸/点击：
+   • 点击开始按钮进入游戏
+   • 触摸坐标会实时显示
+   • 按钮位置有红色边框标记
+
+🐛 调试信息：
+   • 左下角显示实时信息
+   • 包括触摸坐标、鼠标位置
+   • 按钮位置和游戏状态
+
+🎮 操作：
+   • 触摸/点击开始按钮
+   • 观察控制台输出
+   • 查看调试信息更新
+
+💡 提示：
+   • 如果看不到元素，检查Canvas是否正确创建
+   • 触摸坐标应该与按钮位置匹配
+   • 控制台会显示所有触摸事件
+            `;
+            console.log(help);
+            alert('帮助信息已输出到控制台');
+        }
+        
+        // 更新状态信息
+        function updateStatus() {
+            if (gameInstance) {
+                // 触摸坐标
+                if (gameInstance.touchX !== undefined) {
+                    document.getElementById('touchCoords').textContent = 
+                        `${gameInstance.touchX}, ${gameInstance.touchY}`;
+                }
+                
+                // 鼠标坐标
+                if (gameInstance.mouseX !== undefined) {
+                    document.getElementById('mouseCoords').textContent = 
+                        `${gameInstance.mouseX}, ${gameInstance.mouseY}`;
+                }
+                
+                // 按钮位置
+                if (gameInstance.getStartButtonRect) {
+                    const button = gameInstance.getStartButtonRect();
+                    document.getElementById('buttonPos').textContent = 
+                        `(${button.x}, ${button.y}) ${button.width}x${button.height}`;
+                }
+            }
+        }
+        
+        // 页面加载完成后启动游戏
+        window.addEventListener('load', () => {
+            console.log('📱 页面加载完成，启动极简调试版...');
+            startGame();
+            
+            // 定期更新状态
+            setInterval(updateStatus, 100);
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'r':
+                case 'R':
+                    restartGame();
+                    break;
+                case 'd':
+                case 'D':
+                    toggleDebug();
+                    break;
+                case 'c':
+                case 'C':
+                    clearConsole();
+                    break;
+                case 'h':
+                case 'H':
+                    showHelp();
+                    break;
+            }
+        });
+    </script>
+    
+    <!-- 导入极简调试版 -->
+    <script src="simple_debug.js"></script>
+</body>
+</html>
