@@ -2028,18 +2028,18 @@ class GunsGame {
                 });
             }
             
-            // 部分音效添加振动反馈
-            if (typeof tt !== 'undefined') {
-                switch (soundType) {
-                    case 'explosion':
-                        tt.vibrateLong && tt.vibrateLong();
-                        break;
-                    case 'hit':
-                    case 'shoot':
-                        tt.vibrateShort && tt.vibrateShort();
-                        break;
-                }
-            }
+            // 震动反馈已关闭
+            // if (typeof tt !== 'undefined') {
+            //     switch (soundType) {
+            //         case 'explosion':
+            //             tt.vibrateLong && tt.vibrateLong();
+            //             break;
+            //         case 'hit':
+            //         case 'shoot':
+            //             tt.vibrateShort && tt.vibrateShort();
+            //             break;
+            //     }
+            // }
             
             console.log(`播放音效: ${soundType}`);
         } catch (error) {
