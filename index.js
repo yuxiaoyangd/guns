@@ -1,7 +1,7 @@
 // 游戏入口文件
 import './config.js';
 import './audio.js';
-import './game.js';
+import './debug_game.js';
 
 // 游戏启动配置
 const GameLauncher = {
@@ -18,8 +18,8 @@ const GameLauncher = {
                 throw new Error('请在抖音小游戏环境中运行');
             }
             
-            // 创建游戏实例
-            this.gameInstance = new GunsGame();
+            // 创建游戏实例（使用调试版以排查渲染问题）
+            this.gameInstance = new DebugGame();
             
             // 启动成功
             console.log('✅ 游戏启动成功！');
